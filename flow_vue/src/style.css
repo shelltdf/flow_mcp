@@ -1,0 +1,128 @@
+:root {
+  color-scheme: light dark;
+  /* 标题栏：优先跟随系统强调色（支持 AccentColor 的浏览器/平台） */
+  --win-title-bg: #0078d4;
+  --win-title-fg: #ffffff;
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --border: #c5ccd3;
+  --text: #1a1a1a;
+  --muted: #5c6570;
+  --accent: #2563eb;
+  --editor-bg: #fafbfc;
+  --grid-line: rgba(0, 0, 0, 0.14);
+  --grid-center-line: rgba(37, 99, 235, 0.45);
+  /* Windows 风格壳层（浅色）；标题条背景亦见文末 AccentColor */
+  --win-title-border: #005a9e;
+  --win-menu-bg: #f0f0f0;
+  --win-menu-fg: #000000;
+  --win-menu-border: #a0a0a0;
+  --win-menu-hover: #e5f3ff;
+  --win-menu-highlight: #cce8ff;
+  --win-menu-highlight-fg: #000000;
+  --win-menu-muted: #606060;
+  --win-splitter: #c8c8c8;
+  --win-splitter-hover: #a6a6a6;
+  --win-frame-border: #646464;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: #121418;
+    --surface: #1c1f26;
+    --border: #3d4450;
+    --text: #eef1f5;
+    --muted: #9aa3ad;
+    --accent: #60a5fa;
+    --editor-bg: #0f1115;
+    --grid-line: rgba(255, 255, 255, 0.1);
+    --grid-center-line: rgba(96, 165, 250, 0.5);
+    --win-title-bg: #1f1f1f;
+    --win-title-fg: #f3f3f3;
+    --win-title-border: #000000;
+    --win-menu-bg: #2d2d2d;
+    --win-menu-fg: #f3f3f3;
+    --win-menu-border: #555555;
+    --win-menu-hover: #3d3d3d;
+    --win-menu-highlight: #264f78;
+    --win-menu-highlight-fg: #ffffff;
+    --win-menu-muted: #a0a0a0;
+    --win-splitter: #555555;
+    --win-splitter-hover: #6e6e6e;
+    --win-frame-border: #3c3c3c;
+  }
+}
+
+[data-theme='dark'] {
+  --bg: #121418;
+  --surface: #1c1f26;
+  --border: #3d4450;
+  --text: #eef1f5;
+  --muted: #9aa3ad;
+  --accent: #60a5fa;
+  --editor-bg: #0f1115;
+  --grid-line: rgba(255, 255, 255, 0.1);
+  --grid-center-line: rgba(96, 165, 250, 0.5);
+  --win-title-bg: #1f1f1f;
+  --win-title-fg: #f3f3f3;
+  --win-title-border: #000000;
+  --win-menu-bg: #2d2d2d;
+  --win-menu-fg: #f3f3f3;
+  --win-menu-border: #555555;
+  --win-menu-hover: #3d3d3d;
+  --win-menu-highlight: #264f78;
+  --win-menu-highlight-fg: #ffffff;
+  --win-menu-muted: #a0a0a0;
+  --win-splitter: #555555;
+  --win-splitter-hover: #6e6e6e;
+  --win-frame-border: #3c3c3c;
+}
+
+[data-theme='light'] {
+  --win-title-bg: #0078d4;
+  --win-title-fg: #ffffff;
+  --win-title-border: #005a9e;
+  --win-menu-bg: #f0f0f0;
+  --win-menu-fg: #000000;
+  --win-menu-border: #a0a0a0;
+  --win-menu-hover: #e5f3ff;
+  --win-menu-highlight: #cce8ff;
+  --win-menu-highlight-fg: #000000;
+  --win-menu-muted: #606060;
+  --win-splitter: #c8c8c8;
+  --win-splitter-hover: #a6a6a6;
+  --win-frame-border: #646464;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+/* 跟随系统强调色（仅「主题 = 跟随系统」且浏览器支持时生效；显式浅色/深色仍用上方 data-theme 变量） */
+@supports (color: AccentColor) {
+  :root:not([data-theme]) {
+    --win-title-bg: AccentColor;
+    --win-title-fg: AccentColorText;
+    --win-title-border: color-mix(in srgb, AccentColor 70%, #000);
+  }
+}
