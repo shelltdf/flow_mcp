@@ -34,6 +34,14 @@ const ZOOM_MIN = 0.08
 const ZOOM_MAX = 8
 const WORLD_EXTENT = 200000
 
+defineProps<{
+  maximized: boolean
+}>()
+
+const emit = defineEmits<{
+  toggleMaximize: []
+}>()
+
 const { state: settings } = useAppSettings()
 const fc = useFlowchart()
 const svgRef = ref<SVGSVGElement | null>(null)
@@ -99,6 +107,10 @@ const selectedChromeNodes = computed(() =>
 const showResizeHandles = computed(() => fc.state.selectedNodeIds.length === 1)
 
 const t = computed(() => messages[settings.locale])
+
+const shortcutLines = computed(() =>
+  t.value.editorShortcuts.split('\n').map((l) => l.trim()).filter(Boolean),
+)
 
 const zoomPercent = computed(() => Math.round(zoom.value * 100))
 
@@ -748,13 +760,40 @@ onUnmounted(() => {
   <section id="flowchart-editor" class="editor" aria-label="flowchart editor">
     <div class="head">
       <h2 class="title">{{ t.flowchartEditor }}</h2>
-      <span class="hint">{{ t.canvasHint }}</span>
+      <button
+        type="button"
+        class="panel-max-btn"
+        :title="t.dockMaximize"
+        @click="emit('toggleMaximize')"
+      >
+        {{ maximized ? '⧉' : '▢' }}
+      </button>
     </div>
     <div
       class="svg-host"
       :class="{ 'is-panning': middlePanning }"
       @mouseleave="onUp"
     >
+      <div class="shortcut-anchor">
+        <button
+          type="button"
+          class="shortcut-btn"
+          :title="t.shortcutsTitle"
+          :aria-label="t.shortcutsTitle"
+        >
+          <svg class="shortcut-ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M20 5H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 12H4V7h16v10zM6 9h2v2H6V9zm3 0h2v2H9V9zm3 0h2v2h-2V9zm3 0h2v2h-2V9zm3 0h2v2h-2V9zM6 12h8v2H6v-2zm9 0h3v2h-3v-2z"
+            />
+          </svg>
+        </button>
+        <div class="shortcut-popover" role="tooltip">
+          <div v-for="(line, idx) in shortcutLines" :key="idx" class="shortcut-line">
+            {{ line }}
+          </div>
+        </div>
+      </div>
       <div class="zoom-hud" @mousedown.stop @click.stop>
         <button type="button" class="zh-btn" :title="t.zoomOutTitle" @click="zoomOut">
           −
@@ -849,7 +888,7 @@ onUnmounted(() => {
               :y="edgeLabelPos(e).y + 4"
               text-anchor="middle"
               class="edge-priority-label"
-              font-size="11"
+              font-size="12"
               font-weight="600"
               pointer-events="none"
             >
@@ -925,7 +964,7 @@ onUnmounted(() => {
               :y="n.y + 14"
               text-anchor="end"
               class="group-badge"
-              font-size="9"
+              font-size="11"
               font-weight="700"
               pointer-events="none"
             >
@@ -973,7 +1012,7 @@ onUnmounted(() => {
                 "
                 text-anchor="middle"
                 class="node-row-label"
-                font-size="10"
+                font-size="11"
                 pointer-events="none"
               >
                 {{ rowCenterLabel(n, i) }}
@@ -1204,37 +1243,126 @@ onUnmounted(() => {
 .editor {
   display: flex;
   flex-direction: column;
+  align-self: stretch;
+  width: 100%;
   min-height: 0;
   flex: 1;
   height: 100%;
-  padding: 0.5rem;
+  padding: 0;
+  overflow: hidden;
   background: var(--surface);
   border: none;
   border-radius: 0;
 }
 .head {
   display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.35rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.35rem 0.5rem;
+  margin: 0;
+  border-bottom: 1px solid var(--border);
+}
+.panel-max-btn {
+  flex-shrink: 0;
+  padding: 0.15rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.2;
+  cursor: default;
+}
+.panel-max-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .title {
+  flex: 1;
+  min-width: 0;
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
-}
-.hint {
-  font-size: 0.72rem;
-  color: var(--muted);
 }
 .svg-host {
   position: relative;
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
+  min-width: 0;
   overflow: hidden;
+  border: none;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+}
+.shortcut-anchor {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 6;
+}
+.shortcut-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  cursor: default;
+}
+.shortcut-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.shortcut-ico {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+.shortcut-popover {
+  display: none;
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 0;
+  min-width: 260px;
+  max-width: min(380px, calc(100vw - 48px));
+  max-height: min(72vh, 420px);
+  overflow-y: auto;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text);
+  text-align: left;
+}
+.shortcut-popover::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  width: 10px;
+  top: 0;
+  bottom: 0;
+}
+.shortcut-anchor:hover .shortcut-popover,
+.shortcut-anchor:focus-within .shortcut-popover {
+  display: block;
+}
+.shortcut-line {
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+.shortcut-line:last-child {
+  border-bottom: none;
 }
 .zoom-hud {
   position: absolute;
@@ -1249,7 +1377,7 @@ onUnmounted(() => {
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text);
   user-select: none;
 }
@@ -1264,7 +1392,7 @@ onUnmounted(() => {
   border-radius: 3px;
   background: var(--bg);
   color: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   cursor: default;
   line-height: 1.2;
 }
@@ -1281,8 +1409,10 @@ onUnmounted(() => {
 .svg-canvas {
   display: block;
   width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
   height: 100%;
-  min-height: 180px;
   user-select: none;
   touch-action: none;
   cursor: crosshair;
@@ -1437,7 +1567,7 @@ onUnmounted(() => {
 .flow-ctx-menu .ctx-muted {
   margin: 0;
   padding: 0.35rem 0.75rem;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted, #64748b);
 }
 </style>

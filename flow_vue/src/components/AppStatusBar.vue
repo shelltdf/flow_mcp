@@ -34,7 +34,8 @@ const summary = computed(() => {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.35rem 0.75rem;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
   border-top: 1px solid var(--border);
   background: var(--surface);
   cursor: pointer;

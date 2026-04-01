@@ -88,7 +88,8 @@ async function copyAll() {
   padding: 0.75rem;
   flex: 1;
   overflow: auto;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
   white-space: pre-wrap;
   font-family: ui-monospace, monospace;
   background: var(--bg);

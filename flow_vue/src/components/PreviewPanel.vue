@@ -11,6 +11,14 @@ import {
   edgeAttachXLeft,
 } from '@/utils/flowNodeLayout'
 
+defineProps<{
+  maximized: boolean
+}>()
+
+const emit = defineEmits<{
+  toggleMaximize: []
+}>()
+
 const { state: settings } = useAppSettings()
 const { state: fc } = useFlowchart()
 
@@ -65,8 +73,19 @@ function previewTitleFill(type: string) {
 
 <template>
   <section id="preview-panel" class="panel" aria-label="preview">
-    <h2 class="title">{{ t.preview }}</h2>
-    <p class="ratio-hint">{{ t.previewRatioHint }}</p>
+    <header class="panel-head">
+      <div class="panel-head-text">
+        <h2 class="title">{{ t.preview }}</h2>
+      </div>
+      <button
+        type="button"
+        class="panel-max-btn"
+        :title="t.dockMaximize"
+        @click="emit('toggleMaximize')"
+      >
+        {{ maximized ? '⧉' : '▢' }}
+      </button>
+    </header>
     <div class="canvas-wrap">
       <div class="preview-viewport">
         <svg
@@ -128,7 +147,7 @@ function previewTitleFill(type: string) {
               :x="n.x + n.width / 2"
               :y="n.y + 14"
               text-anchor="middle"
-              font-size="11"
+              font-size="12"
               fill="var(--text)"
             >
               {{ n.label }}
@@ -141,6 +160,23 @@ function previewTitleFill(type: string) {
               fill="rgba(255,255,255,0.25)"
             />
           </g>
+          <text class="guide-label guide-label--43" x="6" y="17" pointer-events="none">4:3</text>
+          <text
+            class="guide-label guide-label--169"
+            :x="guide169.x + 6"
+            :y="guide169.y + 15"
+            pointer-events="none"
+          >
+            16:9
+          </text>
+          <text
+            class="guide-label guide-label--11"
+            :x="guide11.x + 6"
+            :y="guide11.y + 15"
+            pointer-events="none"
+          >
+            1:1
+          </text>
         </svg>
       </div>
     </div>
@@ -162,16 +198,37 @@ function previewTitleFill(type: string) {
   border: none;
   border-radius: 0;
 }
-.title {
-  margin: 0 0 0.2rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  margin-bottom: 0.25rem;
 }
-.ratio-hint {
-  margin: 0 0 0.35rem;
-  font-size: 0.68rem;
-  color: var(--muted);
-  line-height: 1.3;
+.panel-head-text {
+  min-width: 0;
+  flex: 1;
+}
+.panel-max-btn {
+  flex-shrink: 0;
+  padding: 0.15rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.2;
+  cursor: default;
+}
+.panel-max-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 .canvas-wrap {
   flex: 1;
@@ -226,9 +283,27 @@ function previewTitleFill(type: string) {
   stroke-dasharray: 2 3;
 }
 
+.guide-label {
+  font-size: 13px;
+  font-weight: 600;
+  paint-order: stroke fill;
+  stroke: var(--editor-bg);
+  stroke-width: 3px;
+  vector-effect: non-scaling-stroke;
+}
+.guide-label--43 {
+  fill: var(--border);
+}
+.guide-label--169 {
+  fill: var(--accent);
+}
+.guide-label--11 {
+  fill: var(--muted);
+}
+
 .meta {
   margin: 0.35rem 0 0;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--muted);
 }
 </style>

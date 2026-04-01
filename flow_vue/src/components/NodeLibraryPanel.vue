@@ -70,8 +70,6 @@ function toggleGroup(key: (typeof groupKeys)[number]) {
 
 <template>
   <section id="node-library-panel" class="panel" aria-label="node library">
-    <h2 class="title">{{ t.nodeLibrary }}</h2>
-
     <div class="groups" role="list">
       <div class="group" role="listitem">
         <button type="button" class="group-head" @click="toggleGroup('container')">
@@ -191,85 +189,91 @@ function toggleGroup(key: (typeof groupKeys)[number]) {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 0.5rem;
-  padding: 0.5rem;
+  gap: 0.35rem;
+  padding: 0.35rem 0.4rem;
   background: var(--surface);
   min-height: 0;
   height: 100%;
   overflow: auto;
 }
-.title {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 600;
-  flex-shrink: 0;
-}
 .groups {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.22rem;
 }
 .group {
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--bg);
   overflow: hidden;
 }
 .group-head {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
   width: 100%;
   margin: 0;
-  padding: 0.35rem 0.45rem;
+  padding: 0.22rem 0.35rem;
   border: none;
   background: var(--surface);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--muted);
   text-align: left;
   cursor: pointer;
+  line-height: 1.15;
 }
 .group-head:hover {
   background: var(--bg);
   color: var(--text);
 }
 .chev {
-  font-size: 9px;
-  width: 1rem;
+  font-size: 8px;
+  width: 0.75rem;
   flex-shrink: 0;
 }
 .group-body {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.35rem 0.45rem 0.5rem;
+  gap: 0.2rem;
+  padding: 0.22rem 0.3rem 0.3rem;
   border-top: 1px solid var(--border);
 }
 .group-body--multi {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.35rem;
+  grid-template-columns: repeat(auto-fill, minmax(6.35rem, 1fr));
+  gap: 0.2rem 0.25rem;
 }
 .node-tile {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.25rem;
-  padding: 0.35rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.22rem;
+  min-height: 0;
+  padding: 0.18rem 0.22rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--text);
   cursor: default;
-  text-align: center;
+  text-align: left;
 }
 .node-tile:hover {
   border-color: var(--accent);
 }
+.node-tile :deep(.node-glyph) {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 0.78rem;
+  max-height: none;
+}
 .tile-lbl {
   font-size: 0.72rem;
-  line-height: 1.2;
+  line-height: 1.15;
   color: var(--muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

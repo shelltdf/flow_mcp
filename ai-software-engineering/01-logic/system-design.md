@@ -5,15 +5,18 @@
 ```mermaid
 flowchart LR
   subgraph shell [壳层与布局]
+    T[菜单 + 工具栏含全屏]
     L[上条带: 预览 | 节点库]
     E[下区: 编辑画布]
-    S[状态栏与 Log]
+    O[底部输出 Dock]
+    S[状态栏与诊断 Log]
   end
   subgraph core [流程图核心]
     M[文档模型]
     P[预览]
     N[节点库]
   end
+  T --> L
   L --> M
   N --> M
   E --> M

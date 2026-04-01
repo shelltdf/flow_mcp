@@ -23,7 +23,6 @@ export const messages = {
     fileSaveError: '保存失败。',
     fileSaveAsPrompt: '请输入文件名（.json）',
     preview: '预览',
-    previewRatioHint: '预览与编辑区同为 4:3；虚线分别为 16:9 与 1:1 参考框。',
     nodeLibrary: '节点库',
     libGroupContainer: '容器',
     libGroupProcess: '进程',
@@ -31,8 +30,6 @@ export const messages = {
     libGroupVariable: '变量',
     addContainer: '容器',
     flowchartEditor: '流程图编辑',
-    canvasHint:
-      '左键单选 · 选中后出现直角外框与四角缩放 · 组框标题双击开闭 · Ctrl 多选 · 空白框选 · 右键菜单 · 中键平移 · 滚轮缩放',
     addProcess: '流程',
     addDecision: '判断',
     addTerminal: '起止',
@@ -58,6 +55,8 @@ export const messages = {
     splitterDock: '拖动调整节点属性区宽度',
     dockNodeProps: '节点属性',
     dockTitleShort: '属性',
+    libraryTitleShort: '库',
+    libraryExpand: '展开节点库',
     dockCollapse: '折叠',
     dockExpand: '展开节点属性',
     dockCollapseBtn: '折叠',
@@ -95,6 +94,14 @@ export const messages = {
     toolbarRunTitle: '开始运行流程',
     toolbarPauseTitle: '暂停运行',
     toolbarStopTitle: '停止并重置',
+    toolbarFullscreenTitle: '全屏显示（Ctrl+空格）',
+    toolbarFullscreenExitTitle: '退出全屏（Ctrl+空格）',
+    consoleDockTitle: '输出',
+    consoleClear: '清空',
+    consoleCopy: '复制',
+    consoleSplitter: '拖动调整输出区高度',
+    consoleExpandBar: '展开输出',
+    consoleCollapseBar: '隐藏输出区',
     groupStateOpen: '开',
     groupStateClosed: '闭',
     sectionTypeFeatures: '当前类型功能',
@@ -119,6 +126,16 @@ export const messages = {
     zoomInTitle: '放大',
     zoomFitTitle: '缩放至适应全部节点',
     zoomResetTitle: '还原为 100% 缩放与位置',
+    shortcutsTitle: '画布快捷键（悬停查看列表）',
+    editorShortcuts: `左键：选择节点或连线
+Ctrl / ⌘ + 左键：多选或切换选中项
+Shift + 左键：多选或切换选中项
+在空白处拖动：框选多个节点
+右键：打开上下文菜单（连线走向、成组等）
+中键拖动：平移画布
+滚轮：缩放视图（指针处为锚点）
+选中节点后拖动四角：调整节点大小
+组框标题区域双击：展开或折叠组`,
     dirIn: '输入',
     dirOut: '输出',
     dirInout: '双向',
@@ -173,7 +190,6 @@ export const messages = {
     fileSaveError: 'Save failed.',
     fileSaveAsPrompt: 'File name (.json)',
     preview: 'Preview',
-    previewRatioHint: 'Same 4:3 as editor; dashed guides: 16:9 and 1:1.',
     nodeLibrary: 'Node library',
     libGroupContainer: 'Container',
     libGroupProcess: 'Process',
@@ -181,8 +197,6 @@ export const messages = {
     libGroupVariable: 'Variables',
     addContainer: 'Container',
     flowchartEditor: 'Flowchart editor',
-    canvasHint:
-      'Click node or edge · Ctrl/⌘ multi-select · Marquee · Right-click menu (group/ungroup, edge route) · Middle pan · Wheel zoom · Resize handle',
     addProcess: 'Process',
     addDecision: 'Decision',
     addTerminal: 'Terminal',
@@ -208,6 +222,8 @@ export const messages = {
     splitterDock: 'Drag to resize properties dock',
     dockNodeProps: 'Node properties',
     dockTitleShort: 'Props',
+    libraryTitleShort: 'Lib',
+    libraryExpand: 'Show node library',
     dockCollapse: 'Collapse',
     dockExpand: 'Show properties',
     dockCollapseBtn: 'Hide',
@@ -245,6 +261,14 @@ export const messages = {
     toolbarRunTitle: 'Run flow',
     toolbarPauseTitle: 'Pause',
     toolbarStopTitle: 'Stop and reset',
+    toolbarFullscreenTitle: 'Fullscreen (Ctrl+Space)',
+    toolbarFullscreenExitTitle: 'Exit fullscreen (Ctrl+Space)',
+    consoleDockTitle: 'Output',
+    consoleClear: 'Clear',
+    consoleCopy: 'Copy',
+    consoleSplitter: 'Drag to resize output panel',
+    consoleExpandBar: 'Show output',
+    consoleCollapseBar: 'Hide output panel',
     groupStateOpen: 'Exp',
     groupStateClosed: 'Col',
     sectionTypeFeatures: 'Type features',
@@ -269,6 +293,16 @@ export const messages = {
     zoomInTitle: 'Zoom in',
     zoomFitTitle: 'Fit all nodes',
     zoomResetTitle: 'Reset zoom and pan',
+    shortcutsTitle: 'Canvas shortcuts (hover for list)',
+    editorShortcuts: `Left click: select node or edge
+Ctrl / ⌘ + click: multi-select or toggle selection
+Shift + click: multi-select or toggle selection
+Drag on empty canvas: marquee selection
+Right click: context menu (edge route, group, …)
+Middle button drag: pan canvas
+Mouse wheel: zoom (anchored at pointer)
+Drag corner handles on selection: resize node
+Double-click group title bar: expand or collapse group`,
     dirIn: 'In',
     dirOut: 'Out',
     dirInout: 'In/out',

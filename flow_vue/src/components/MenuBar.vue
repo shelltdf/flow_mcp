@@ -164,7 +164,7 @@ function emitClose(fn: () => void) {
   border-bottom: 1px solid var(--win-menu-border);
   user-select: none;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .title-bar {
@@ -178,7 +178,7 @@ function emitClose(fn: () => void) {
 }
 
 .title-text {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1;
   margin-left: 4px;
 }
@@ -217,7 +217,7 @@ function emitClose(fn: () => void) {
 .menu-bar {
   display: flex;
   align-items: stretch;
-  height: 24px;
+  height: 26px;
   background: var(--win-menu-bg);
   padding: 0 2px;
   gap: 0;
@@ -287,7 +287,7 @@ function emitClose(fn: () => void) {
 
 .sub-label {
   padding: 4px 8px 2px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--win-menu-muted);
   pointer-events: none;
 }

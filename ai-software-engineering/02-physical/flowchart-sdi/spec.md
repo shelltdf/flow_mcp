@@ -6,11 +6,24 @@
 
 ## 布局 DOM 映射（初版）
 
+根布局（`App.vue`）：纵向为 **菜单栏 → 工具栏 → `workspace-stack`（主工作区 `main.workspace-shell` + 可选横向分割条 + 底部输出区）→ 状态栏**。主工作区内：左侧 **节点库缘条 + 节点库**、中间 **预览/编辑**、右侧 **属性 Dock + 缘条**（见 `01-logic/detailed-design-ui-shell.md`）。
+
 | 区域 | 建议容器 id / 类 | 行为 |
 |------|------------------|------|
-| 上条带左：预览 | `preview-panel` | 展示缩略预览 |
-| 上条带右：节点库 | `node-library-panel` | 节点类型列表与添加 |
-| 下：编辑 | `flowchart-editor` | 主编辑画布：SVG 2D 视图，`translate`+`scale` 视口变换；背景网格图案；过逻辑中心 `(EDITOR_W/2, EDITOR_H/2)` 的十字中心线（`vector-effect: non-scaling-stroke`）；中键拖动平移、滚轮缩放（指针处为缩放锚点） |
+| 工具栏 | `editor-toolbar` | 居中：运行 / 暂停 / 停止（图标）；**右侧**：浏览器**全屏**切换（`requestFullscreen` / `exitFullscreen`）；快捷键 **Ctrl+空格**（macOS 上为 Ctrl+空格；**⌘+空格** 常与系统 Spotlight 冲突） |
+| 上条带左：预览 | `preview-panel` | 展示缩略预览；**4:3 / 16:9 / 1:1** 参考框在画布内以文字标注（`4:3`、`16:9`、`1:1`），不再单独使用长说明文案 |
+| 上条带右：节点库 | `node-library-panel` | 节点类型列表与添加；左侧 **缘条** + 标题栏（折叠、最大化），行为同 Dock 规范 |
+| 下：编辑 | `flowchart-editor` | 主编辑画布：SVG 2D 视图，`translate`+`scale` 视口变换；背景网格图案；过逻辑中心 `(EDITOR_W/2, EDITOR_H/2)` 的十字中心线（`vector-effect: non-scaling-stroke`）；中键拖动平移、滚轮缩放（指针处为缩放锚点）；画布区左上角 **快捷键**按钮，悬停列出操作说明 |
+| 底部输出 | `output-console-dock` | **默认折叠**，仅显示底部横条可展开；展开后为多行纯文本输出区，供节点/运行时代码写入（`consolePrint`）；支持复制、清空、折叠；与主工作区之间有**横向分割条**可调高度 |
+| 全局样式 | `style.css`（`body`） | 基准字号 **16px**、行高约 **1.5**，保证正文与控件可读性 |
+
+### 页内「全窗口聚焦」
+
+- 预览或编辑区标题栏 **最大化** 时：仅保留 **菜单栏、工具栏** 与当前 **预览或编辑** 之一，隐藏节点库、属性区、状态栏等；再次点击或退出后恢复进入前布局快照。
+
+### 节点输出 API（实现侧）
+
+- 模块自 `src/stores/nodeConsole.ts` 导出 **`consolePrint(text: string)`**（可多行）、**`consoleClear()`**、**`consoleTextPlain()`**；与 **应用诊断 Log**（`appLog` + Log 弹窗）分离，专供业务/节点向底部输出区写信息。
 
 ### 画布坐标
 

@@ -712,7 +712,7 @@ function typeFeatureText(type: string) {
   border-radius: 3px;
   background: var(--surface);
   color: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   cursor: default;
 }
 .dock-btn:hover {
@@ -752,7 +752,7 @@ function typeFeatureText(type: string) {
   background: var(--border);
 }
 .section-chevron {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
   width: 1rem;
   flex-shrink: 0;
@@ -766,7 +766,7 @@ function typeFeatureText(type: string) {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  font-size: 11px;
+  font-size: 12px;
 }
 .field.row-check {
   flex-direction: row;
@@ -816,20 +816,20 @@ function typeFeatureText(type: string) {
 }
 .port-section-title {
   margin: 0.5rem 0 0.15rem;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text);
 }
 .port-hint {
   margin: 0 0 0.35rem;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
   line-height: 1.3;
 }
 .inp.readonly {
   opacity: 0.9;
   cursor: default;
-  font-size: 10px;
+  font-size: 11px;
 }
 .user-head {
   justify-content: flex-end;
@@ -850,7 +850,7 @@ function typeFeatureText(type: string) {
 }
 .btn-small {
   padding: 0.15rem 0.4rem;
-  font-size: 11px;
+  font-size: 12px;
   border: 1px solid var(--border);
   border-radius: 3px;
   background: var(--surface);
@@ -877,14 +877,14 @@ function typeFeatureText(type: string) {
   align-items: center;
 }
 .port-display {
-  font-size: 11px;
+  font-size: 12px;
 }
 .port-name {
   min-width: 0;
 }
 .port-sel {
   padding: 0.2rem;
-  font-size: 11px;
+  font-size: 12px;
 }
 .btn-remove {
   padding: 0;
@@ -926,7 +926,7 @@ function typeFeatureText(type: string) {
 }
 .type-feature-desc {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.45;
   color: var(--muted);
 }

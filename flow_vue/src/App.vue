@@ -16,8 +16,15 @@ import { log } from '@/stores/appLog'
 import { usePanelSplitters } from '@/composables/usePanelSplitters'
 import { useFlowchartFiles } from '@/composables/useFlowchartFiles'
 import { useDockResize } from '@/composables/useDockResize'
+import { useFullscreen } from '@/composables/useFullscreen'
+import OutputConsoleDock from '@/components/OutputConsoleDock.vue'
 
 const SPLITTER_PX = 4
+
+const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
+
+const consoleCollapsed = ref(true)
+const consoleHeightPx = ref(160)
 
 const { state: settings } = useAppSettings()
 const fc = useFlowchart()
@@ -45,10 +52,21 @@ const { upperPx, startHorizontal } = usePanelSplitters(mainRef, {
   splitterSize: SPLITTER_PX,
 })
 
+const libraryCollapsed = ref(false)
+const libraryMaximized = ref(false)
 const libraryWidthPx = ref(240)
+
+const libraryPanelWidth = computed(() => {
+  if (libraryCollapsed.value) return 0
+  if (libraryMaximized.value && shellRef.value) {
+    return Math.min(Math.floor(shellRef.value.clientWidth * 0.48), 640)
+  }
+  return libraryWidthPx.value
+})
 
 function startLibraryResize(e: MouseEvent) {
   e.preventDefault()
+  libraryMaximized.value = false
   const startX = e.clientX
   const startW = libraryWidthPx.value
   function move(ev: MouseEvent) {
@@ -61,6 +79,87 @@ function startLibraryResize(e: MouseEvent) {
   }
   window.addEventListener('mousemove', move)
   window.addEventListener('mouseup', up)
+}
+
+function onLibraryCollapse() {
+  libraryCollapsed.value = true
+  libraryMaximized.value = false
+}
+
+function onLibraryToggleMaximize() {
+  libraryMaximized.value = !libraryMaximized.value
+}
+
+function toggleLibraryEdge() {
+  libraryCollapsed.value = !libraryCollapsed.value
+  if (!libraryCollapsed.value) {
+    libraryMaximized.value = false
+  }
+}
+
+/** 全窗口聚焦：仅保留菜单栏、工具栏与当前面板；退出时恢复布局 */
+type WorkspaceSnapshot = {
+  upperPx: number
+  libraryCollapsed: boolean
+  libraryMaximized: boolean
+  libraryWidthPx: number
+  dockCollapsed: boolean
+  dockMaximized: boolean
+  dockWidthPx: number
+}
+
+const workspaceFocus = ref<'preview' | 'editor' | null>(null)
+const workspaceSnapshot = ref<WorkspaceSnapshot | null>(null)
+
+function saveWorkspaceSnapshot() {
+  workspaceSnapshot.value = {
+    upperPx: upperPx.value,
+    libraryCollapsed: libraryCollapsed.value,
+    libraryMaximized: libraryMaximized.value,
+    libraryWidthPx: libraryWidthPx.value,
+    dockCollapsed: dockCollapsed.value,
+    dockMaximized: dockMaximized.value,
+    dockWidthPx: dockWidthPx.value,
+  }
+}
+
+function restoreWorkspaceSnapshot() {
+  const s = workspaceSnapshot.value
+  if (!s) return
+  upperPx.value = s.upperPx
+  libraryCollapsed.value = s.libraryCollapsed
+  libraryMaximized.value = s.libraryMaximized
+  libraryWidthPx.value = s.libraryWidthPx
+  dockCollapsed.value = s.dockCollapsed
+  dockMaximized.value = s.dockMaximized
+  dockWidthPx.value = s.dockWidthPx
+  workspaceSnapshot.value = null
+}
+
+function togglePreviewMaximize() {
+  if (workspaceFocus.value === 'preview') {
+    workspaceFocus.value = null
+    restoreWorkspaceSnapshot()
+    nextTick(() => layoutInitialSizes())
+  } else {
+    if (workspaceFocus.value === null) {
+      saveWorkspaceSnapshot()
+    }
+    workspaceFocus.value = 'preview'
+  }
+}
+
+function toggleEditorMaximize() {
+  if (workspaceFocus.value === 'editor') {
+    workspaceFocus.value = null
+    restoreWorkspaceSnapshot()
+    nextTick(() => layoutInitialSizes())
+  } else {
+    if (workspaceFocus.value === null) {
+      saveWorkspaceSnapshot()
+    }
+    workspaceFocus.value = 'editor'
+  }
 }
 
 const runPhase = ref<RunPhase>('idle')
@@ -120,12 +219,11 @@ let workspaceSized = false
 function layoutInitialSizes() {
   const el = mainRef.value
   if (!el) return
-  const w = el.clientWidth
   const h = el.clientHeight
-  const innerW = Math.max(0, w - SPLITTER_PX)
   if (!workspaceSized) {
     workspaceSized = true
   }
+  if (workspaceFocus.value !== null) return
   const maxU = Math.max(96, h - 140 - SPLITTER_PX)
   upperPx.value = Math.min(Math.max(96, upperPx.value), maxU)
 }
@@ -137,10 +235,12 @@ onMounted(() => {
     layoutInitialSizes()
   })
   window.addEventListener('resize', layoutInitialSizes)
+  window.addEventListener('keydown', onGlobalKeydown)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', layoutInitialSizes)
+  window.removeEventListener('keydown', onGlobalKeydown)
 })
 
 function openLog() {
@@ -149,6 +249,40 @@ function openLog() {
 
 function closeLog() {
   logOpen.value = false
+}
+
+function startConsoleResize(e: MouseEvent) {
+  e.preventDefault()
+  const shell = shellRef.value
+  if (!shell) return
+  const startY = e.clientY
+  const startH = consoleHeightPx.value
+  function move(ev: MouseEvent) {
+    const dy = ev.clientY - startY
+    const next = startH - dy
+    const max = Math.min(
+      Math.floor(shell.clientHeight * 0.62),
+      Math.floor(window.innerHeight * 0.55),
+    )
+    consoleHeightPx.value = Math.max(72, Math.min(max, next))
+  }
+  function up() {
+    window.removeEventListener('mousemove', move)
+    window.removeEventListener('mouseup', up)
+  }
+  window.addEventListener('mousemove', move)
+  window.addEventListener('mouseup', up)
+}
+
+function onGlobalKeydown(e: KeyboardEvent) {
+  const el = e.target as HTMLElement | null
+  if (!el) return
+  const tag = el.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable) return
+  if (e.code === 'Space' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault()
+    toggleFullscreen()
+  }
 }
 </script>
 
@@ -172,62 +306,143 @@ function closeLog() {
     />
     <EditorToolbar
       :phase="runPhase"
+      :is-fullscreen="isFullscreen"
       @run="onToolbarRun"
       @pause="onToolbarPause"
       @stop="onToolbarStop"
+      @toggle-fullscreen="toggleFullscreen"
     />
+    <div class="workspace-stack">
     <main ref="shellRef" class="workspace-shell">
-      <div class="lib-dock" :style="{ width: libraryWidthPx + 'px' }">
-        <NodeLibraryPanel />
-      </div>
-      <div
-        class="splitter splitter-v"
-        role="separator"
-        :aria-label="t.splitterLibrary"
-        @mousedown="startLibraryResize"
-      />
-      <div ref="mainRef" class="workspace-main">
-        <div class="upper" :style="{ height: upperPx + 'px' }">
-          <PreviewPanel />
+      <template v-if="workspaceFocus === null">
+        <div class="library-edge" aria-label="node library dock edge">
+          <button
+            type="button"
+            class="edge-btn"
+            :title="libraryCollapsed ? t.libraryExpand : t.dockCollapse"
+            @click="toggleLibraryEdge"
+          >
+            {{ libraryCollapsed ? '▶' : '◀' }}
+          </button>
+          <span class="edge-lbl">{{ t.libraryTitleShort }}</span>
         </div>
-        <div
-          class="splitter splitter-h"
-          role="separator"
-          :aria-label="t.splitterHorizontal"
-          @mousedown="startHorizontal"
-        />
-        <div class="lower">
-          <FlowchartEditor />
-        </div>
-      </div>
 
-      <template v-if="!dockCollapsed">
-        <div
-          class="splitter splitter-v splitter-dock"
-          role="separator"
-          :aria-label="t.splitterDock"
-          @mousedown="startDockResize"
-        />
-        <div
-          class="dock-display"
-          :style="{ width: dockPanelWidth + 'px', minWidth: dockMaximized ? '200px' : undefined }"
-        >
-          <NodePropertiesDock
-            :maximized="dockMaximized"
-            @collapse="onDockCollapse"
-            @toggle-maximize="onDockToggleMaximize"
+        <template v-if="!libraryCollapsed">
+          <div class="lib-dock" :style="{ width: libraryPanelWidth + 'px' }">
+            <header class="lib-dock-head">
+              <span class="lib-dock-title">{{ t.nodeLibrary }}</span>
+              <span class="lib-dock-actions">
+                <button type="button" class="dock-btn" :title="t.dockMaximize" @click="onLibraryToggleMaximize">
+                  {{ libraryMaximized ? '⧉' : '▢' }}
+                </button>
+                <button type="button" class="dock-btn" :title="t.dockCollapse" @click="onLibraryCollapse">
+                  {{ t.dockCollapseBtn }}
+                </button>
+              </span>
+            </header>
+            <div class="lib-dock-body">
+              <NodeLibraryPanel />
+            </div>
+          </div>
+          <div
+            class="splitter splitter-v"
+            role="separator"
+            :aria-label="t.splitterLibrary"
+            @mousedown="startLibraryResize"
           />
-        </div>
+        </template>
       </template>
 
-      <div class="dock-edge" aria-label="dock edge">
-        <button type="button" class="edge-btn" :title="dockCollapsed ? t.dockExpand : t.dockCollapse" @click="toggleDockEdge">
-          {{ dockCollapsed ? '◀' : '▶' }}
-        </button>
-        <span class="edge-lbl">{{ t.dockTitleShort }}</span>
+      <div
+        ref="mainRef"
+        class="workspace-main"
+        :class="{ 'workspace-main--solo': workspaceFocus !== null }"
+      >
+        <template v-if="workspaceFocus === null">
+          <div class="upper" :style="{ height: upperPx + 'px' }">
+            <PreviewPanel
+              :maximized="false"
+              @toggle-maximize="togglePreviewMaximize"
+            />
+          </div>
+          <div
+            class="splitter splitter-h"
+            role="separator"
+            :aria-label="t.splitterHorizontal"
+            @mousedown="startHorizontal"
+          />
+          <div class="lower">
+            <FlowchartEditor
+              :maximized="false"
+              @toggle-maximize="toggleEditorMaximize"
+            />
+          </div>
+        </template>
+        <PreviewPanel
+          v-else-if="workspaceFocus === 'preview'"
+          :maximized="true"
+          @toggle-maximize="togglePreviewMaximize"
+        />
+        <FlowchartEditor
+          v-else
+          :maximized="true"
+          @toggle-maximize="toggleEditorMaximize"
+        />
       </div>
+
+      <template v-if="workspaceFocus === null">
+        <template v-if="!dockCollapsed">
+          <div
+            class="splitter splitter-v splitter-dock"
+            role="separator"
+            :aria-label="t.splitterDock"
+            @mousedown="startDockResize"
+          />
+          <div
+            class="dock-display"
+            :style="{ width: dockPanelWidth + 'px', minWidth: dockMaximized ? '200px' : undefined }"
+          >
+            <NodePropertiesDock
+              :maximized="dockMaximized"
+              @collapse="onDockCollapse"
+              @toggle-maximize="onDockToggleMaximize"
+            />
+          </div>
+        </template>
+
+        <div class="dock-edge" aria-label="dock edge">
+          <button type="button" class="edge-btn" :title="dockCollapsed ? t.dockExpand : t.dockCollapse" @click="toggleDockEdge">
+            {{ dockCollapsed ? '◀' : '▶' }}
+          </button>
+          <span class="edge-lbl">{{ t.dockTitleShort }}</span>
+        </div>
+      </template>
     </main>
-    <AppStatusBar :on-open-log="openLog" />
+    <template v-if="!consoleCollapsed">
+      <div
+        class="splitter splitter-h console-splitter"
+        role="separator"
+        :aria-label="t.consoleSplitter"
+        @mousedown="startConsoleResize"
+      />
+      <OutputConsoleDock
+        :style="{ height: consoleHeightPx + 'px' }"
+        @collapse="consoleCollapsed = true"
+      />
+    </template>
+    <div
+      v-else
+      class="console-collapsed-bar"
+      role="button"
+      tabindex="0"
+      :title="t.consoleExpandBar"
+      @click="consoleCollapsed = false"
+      @keydown.enter.prevent="consoleCollapsed = false"
+    >
+      {{ t.consoleExpandBar }}
+    </div>
+    </div>
+    <AppStatusBar v-if="workspaceFocus === null" :on-open-log="openLog" />
     <LogDialog :open="logOpen" @close="closeLog" />
   </div>
 </template>
@@ -239,6 +454,14 @@ function closeLog() {
   height: 100%;
   min-height: 100vh;
   background: var(--bg);
+}
+
+.workspace-stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
 }
 
 .workspace-shell {
@@ -254,6 +477,18 @@ function closeLog() {
   background: var(--surface);
 }
 
+.library-edge {
+  width: 26px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 2px;
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+  gap: 8px;
+}
+
 .lib-dock {
   flex-shrink: 0;
   display: flex;
@@ -265,11 +500,69 @@ function closeLog() {
   background: var(--surface);
 }
 
+.lib-dock-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 13px;
+}
+
+.lib-dock-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lib-dock-actions {
+  display: flex;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.dock-btn {
+  padding: 0.15rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  cursor: default;
+}
+
+.dock-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.lib-dock-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .workspace-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+}
+
+.workspace-main--solo {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workspace-main--solo > :deep(section) {
+  flex: 1;
   min-height: 0;
 }
 
@@ -310,12 +603,44 @@ function closeLog() {
   background: var(--win-splitter-hover);
 }
 
+.console-splitter {
+  cursor: row-resize;
+}
+
+.console-collapsed-bar {
+  flex-shrink: 0;
+  min-height: 26px;
+  padding: 0 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: default;
+  user-select: none;
+}
+
+.console-collapsed-bar:hover {
+  color: var(--accent);
+  background: var(--surface);
+}
+
 .lower {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+.lower > * {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
 }
 
 .dock-display {
@@ -345,7 +670,7 @@ function closeLog() {
   border-radius: 3px;
   background: var(--surface);
   color: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.2;
   cursor: default;
 }
@@ -358,7 +683,7 @@ function closeLog() {
 .edge-lbl {
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
   user-select: none;
   letter-spacing: 0.06em;
